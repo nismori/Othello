@@ -2,7 +2,7 @@ import tkinter as tk
 SIZE = 75
 
 othello = tk.Tk()
-othello.title("Othello")
+othello.title("Othello : tour du Joueur 1")
 
 """Règles de l'Othello : https://www.ffothello.org/othello/regles-du-jeu/"""
 
@@ -16,62 +16,119 @@ def convertir(x, y):
 def can_flip(row,col):
     for i in range(-1,2):
         for j in range(-1,2):
-
             if(i == 0) and (j == 0):
                 continue
             r, c = row + i, col + j
-            if((0 <= r < 8) and (0 <= c < 8)):
-                while((0 <= r < 8 and 0 <= c < 8) and (board[r][c] != 0 and board[r][c] != player_turn)):
-                    r+=i
-                    c+=j
-                    if not (0 <= r < 8 and 0 <= c < 8):
-                        break
-                    if board[r][c] == 0:
-                        break
-                    if board[r][c] == player_turn:
-                        return True
-    return False
+            while((0 <= r < 8 and 0 <= c < 8) and (board[r][c] != 0 and board[r][c] != player_turn)):
+                r+=i
+                c+=j
+                if not (0 <= r < 8 and 0 <= c < 8):
+                    break
+                if board[r][c] == 0:
+                    break
+                if board[r][c] == player_turn:
+                    return False
+    return True
 
-def flip(row,col):
+def flip2(row,col):
     for i in range(-1,2):
         for j in range(-1,2):
             if(i == 0) and (j == 0):
                 continue
             r, c = row + i, col + j
-            if((0 <= r < 8) and (0 <= c < 8)):
-                while((0 <= r < 8 and 0 <= c < 8) and (board[r][c] != 0 and board[r][c] != player_turn)):
-                    if(player_turn == 1):
-                        board[r][c] = 1
-                        canvas.create_oval(c * SIZE + 5, r * SIZE + 5,(c + 1) * SIZE - 5, (r + 1) * SIZE - 5, fill="black")
-                    else:
-                        board[r][c] = 2
-                        canvas.create_oval(c * SIZE + 5, r * SIZE + 5,(c + 1) * SIZE - 5, (r + 1) * SIZE - 5, fill="white")
-                    r+=i
-                    c+=j
-                    if not (0 <= r < 8 and 0 <= c < 8):
-                        break
-                    if board[r][c] == 0:
-                        break
-                    if board[r][c] == player_turn:
-                        break
+            flip_tab = []
+            while((0 <= r < 8 and 0 <= c < 8) and (board[r][c] != 0)):
+                if(board[r][c] == player_turn):
+                    for row2,col2 in flip_tab:
+                        board[row2][col2] = player_turn
+                        color = "black" if player_turn == 1 else "white"
+                        canvas.create_oval(c * SIZE + 5, r * SIZE + 5,(c + 1) * SIZE - 5, (r + 1) * SIZE - 5, fill=color)
+                else:
+                    flip_tab.append((r,c))
+                r+=i
+                c+=j
+
+def flip(row, col):
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if i == 0 and j == 0:  # Ignorer la direction centrale
+                continue
+
+            r, c = row + i, col + j
+            pieces_to_flip = []  # Stocke les pièces à retourner temporairement
+
+            # Parcourir dans une direction donnée
+            while 0 <= r < 8 and 0 <= c < 8:
+                if board[r][c] == 0:  # Case vide : direction invalide
+                    break
+                elif board[r][c] == player_turn:  # Pièce du joueur actuel
+                    # Séquence valide, retourner les pièces collectées
+                    for rr, cc in pieces_to_flip:
+                        board[rr][cc] = player_turn
+                        color = "black" if player_turn == 1 else "white"
+                        canvas.create_oval(
+                            cc * SIZE + 5, rr * SIZE + 5,
+                            (cc + 1) * SIZE - 5, (rr + 1) * SIZE - 5,
+                            fill=color
+                        )
+                    break
+                else:  # Pièce adverse
+                    pieces_to_flip.append((r, c))  # Ajouter la pièce à la liste
+                r += i
+                c += j
+
+def change_player_turn():
+    global player_turn
+    if(player_turn == 1):
+        othello.title("Othello : tour du Joueur 2")
+        player_turn = 2
+    else:
+        othello.title("Othello : tour du Joueur 1")
+        player_turn = 1
+
+def count():
+    for i in range(8):
+        for j in range(8):
+            if board[i][j] == 0:
+                return False
+    return True
+
+def who_win():
+    sb=0;sn=0
+    for i in range(8):
+        for j in range(8):
+            if(board[i][j] == 1):
+                sn+=1
+            else:
+                sb+=1
+        if sn > sb:
+            othello.title("Le Joueur 1 a gagné !")
+        if sb > sn:
+            othello.title("Le Joueur 2 a gagné !")
+        else:
+            othello.title("Egalité")
 
 #Quand on clique sur la case, on vérifie si on peut bien poser la tuile et on pose une tuile de la couleur du joueur correspondant.
 def on_click(event):
     global board, player_turn
+    if player_turn == None:
+        player_turn = 1
     row, col = convertir(event.x, event.y)
-    if(board[row][col] == 0 and not(can_flip(row,col))):
+    if(board[row][col] == 0 and (can_flip(row,col))):
         return
     if board[row][col] == 0:
         if player_turn == 1:
             board[row][col] = 1
             canvas.create_oval(col * SIZE + 5, row * SIZE + 5,(col + 1) * SIZE - 5, (row + 1) * SIZE - 5, fill="black")
             flip(row,col)
-            player_turn = 2
+            change_player_turn()
         else:
             board[row][col] = 2
             canvas.create_oval(col * SIZE + 5, row * SIZE + 5,(col + 1) * SIZE - 5, (row + 1) * SIZE - 5, fill="white")
             flip(row,col)
-            player_turn = 1
+            change_player_turn()
+        if(count()):
+            who_win()
 
 # Les 4 tuiles du milieu de plateau
 def initialiser():
