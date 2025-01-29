@@ -6,11 +6,13 @@ othello.title("Othello : tour du Joueur 1")
 
 """Règles de l'Othello : https://www.ffothello.org/othello/regles-du-jeu/"""
 
+
 # Convertit l'endroit où l'utilisateur clique en une case du tableau board
 def convertir(x, y):
     row = y // SIZE
     col = x // SIZE
     return int(row), int(col)
+
 
 # Vérifie si on peut retourner les pièces ou non
 def can_flip(row,col):
@@ -30,23 +32,6 @@ def can_flip(row,col):
                     return False
     return True
 
-def flip2(row,col):
-    for i in range(-1,2):
-        for j in range(-1,2):
-            if(i == 0) and (j == 0):
-                continue
-            r, c = row + i, col + j
-            flip_tab = []
-            while((0 <= r < 8 and 0 <= c < 8) and (board[r][c] != 0)):
-                if(board[r][c] == player_turn):
-                    for row2,col2 in flip_tab:
-                        board[row2][col2] = player_turn
-                        color = "black" if player_turn == 1 else "white"
-                        canvas.create_oval(c * SIZE + 5, r * SIZE + 5,(c + 1) * SIZE - 5, (r + 1) * SIZE - 5, fill=color)
-                else:
-                    flip_tab.append((r,c))
-                r+=i
-                c+=j
 
 def flip(row, col):
     for i in range(-1, 2):
@@ -77,6 +62,7 @@ def flip(row, col):
                 r += i
                 c += j
 
+
 def change_player_turn():
     global player_turn
     if(player_turn == 1):
@@ -86,12 +72,19 @@ def change_player_turn():
         othello.title("Othello : tour du Joueur 1")
         player_turn = 1
 
+
 def count():
+    a = 1
     for i in range(8):
         for j in range(8):
             if board[i][j] == 0:
                 return False
+            if(can_flip(i,j)):
+                a = 0
+    if(a):
+        return True
     return True
+
 
 def who_win():
     sb=0;sn=0
@@ -107,6 +100,7 @@ def who_win():
             othello.title("Le Joueur 2 a gagné !")
         else:
             othello.title("Egalité")
+
 
 #Quand on clique sur la case, on vérifie si on peut bien poser la tuile et on pose une tuile de la couleur du joueur correspondant.
 def on_click(event):
@@ -130,17 +124,19 @@ def on_click(event):
         if(count()):
             who_win()
 
+
 # Les 4 tuiles du milieu de plateau
 def initialiser():
-    board[3][3] = 1
-    board[3][4] = 2     
-    board[4][3] = 2
-    board[4][4] = 1
+    board[3][3] = 2
+    board[3][4] = 1     
+    board[4][3] = 1
+    board[4][4] = 2
 
-    canvas.create_oval(3 * SIZE + 5, 3 * SIZE + 5, (3 + 1) * SIZE - 5, (3 + 1) * SIZE - 5 , fill="black")
-    canvas.create_oval(3 * SIZE + 5, 4 * SIZE + 5, (3 + 1) * SIZE - 5, (4 + 1) * SIZE - 5 , fill="white")
-    canvas.create_oval(4 * SIZE + 5, 3 * SIZE + 5, (4 + 1) * SIZE - 5, (3 + 1) * SIZE - 5 , fill="white")
-    canvas.create_oval(4 * SIZE + 5, 4 * SIZE + 5, (4 + 1) * SIZE - 5, (4 + 1) * SIZE - 5 , fill="black")
+    canvas.create_oval(3 * SIZE + 5, 3 * SIZE + 5, (3 + 1) * SIZE - 5, (3 + 1) * SIZE - 5 , fill="white")
+    canvas.create_oval(3 * SIZE + 5, 4 * SIZE + 5, (3 + 1) * SIZE - 5, (4 + 1) * SIZE - 5 , fill="black")
+    canvas.create_oval(4 * SIZE + 5, 3 * SIZE + 5, (4 + 1) * SIZE - 5, (3 + 1) * SIZE - 5 , fill="black")
+    canvas.create_oval(4 * SIZE + 5, 4 * SIZE + 5, (4 + 1) * SIZE - 5, (4 + 1) * SIZE - 5 , fill="white")
+
 
 # Initialisation d'un tableau à deux dimensions qui va garder un compte des valeurs dans les cases
 board = [[0 for _ in range(8)] for _ in range(8)]
